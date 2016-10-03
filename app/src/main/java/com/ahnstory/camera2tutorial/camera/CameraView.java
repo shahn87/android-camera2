@@ -18,5 +18,6 @@ public class CameraView extends SurfaceView {
 
     public void addSurfaceHolderCallback(SurfaceHolder.Callback callback) {
         getHolder().addCallback(callback);
+        getHolder().setKeepScreenOn(true);
     }
 }

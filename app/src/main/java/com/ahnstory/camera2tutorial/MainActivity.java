@@ -2,6 +2,7 @@ package com.ahnstory.camera2tutorial;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,9 +10,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.SurfaceHolder;
+import android.view.Surface;
+import android.view.TextureView;
 
-import com.ahnstory.camera2tutorial.camera.CameraView;
+import com.ahnstory.camera2tutorial.camera.CameraTextureView;
 import com.ahnstory.camera2tutorial.camera.LollipopCameraManager;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,43 +22,78 @@ public class MainActivity extends AppCompatActivity {
     private final String TAG = "MainActivity";
 
     @Nullable private LollipopCameraManager mCameraManager;
-    @Nullable private CameraView mCameraView;
+    @Nullable private CameraTextureView mCameraTextureView;
+//    @Nullable private CameraView mCameraView;
+
+    @NonNull private final TextureView.SurfaceTextureListener mSurfaceTextureListener = new TextureView.SurfaceTextureListener() {
+        @Override
+        public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+            Log.d(TAG, "onSurfaceTextureAvailable");
+            if (mCameraManager != null) {
+                //mCameraManager.setPreviewSurface(new Surface(surface));
+                if (checkPermission(Manifest.permission.CAMERA)) {
+                    mCameraManager.openCamera(width, height);
+                }
+            }
+        }
+
+        @Override
+        public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+
+        }
+
+        @Override
+        public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+            return false;
+        }
+
+        @Override
+        public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mCameraManager = new LollipopCameraManager(this);
-        mCameraView = (CameraView) findViewById(R.id.camera_view);
-        if (mCameraView != null) {
-            mCameraView.addSurfaceHolderCallback(new SurfaceHolder.Callback() {
-                @Override
-                public void surfaceCreated(SurfaceHolder holder) {
-                    if (mCameraManager != null) {
-                        mCameraManager.getPreviewSurface(mCameraView.getHolder().getSurface());
-                    }
-                }
+        mCameraTextureView = (CameraTextureView) findViewById(R.id.camera_texture_view);
+        if (mCameraTextureView != null) {
+            mCameraTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
 
-                @Override
-                public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
-                }
-
-                @Override
-                public void surfaceDestroyed(SurfaceHolder holder) {
-
-                }
-            });
+            mCameraManager = new LollipopCameraManager(this);
+            mCameraManager.setTextureView(mCameraTextureView);
         }
+//        mCameraView = (CameraView) findViewById(R.id.camera_view);
+//        if (mCameraView != null) {
+//            mCameraView.addSurfaceHolderCallback(new SurfaceHolder.Callback() {
+//                @Override
+//                public void surfaceCreated(SurfaceHolder holder) {
+//                    if (mCameraManager != null) {
+//                        mCameraManager.setPreviewSurface(mCameraView.getHolder().getSurface());
+//                    }
+//                }
+//
+//                @Override
+//                public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+//                }
+//
+//                @Override
+//                public void surfaceDestroyed(SurfaceHolder holder) {
+//
+//                }
+//            });
+//        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        if (checkPermission(Manifest.permission.CAMERA) && mCameraManager != null) {
-            mCameraManager.openCamera();
+        if (checkPermission(Manifest.permission.CAMERA) && mCameraManager != null
+                && mCameraTextureView != null && mCameraTextureView.isAvailable()) {
+            mCameraManager.openCamera(mCameraTextureView.getWidth(), mCameraTextureView.getHeight());
         }
     }
 
@@ -80,7 +117,8 @@ public class MainActivity extends AppCompatActivity {
                         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                             return;
                         }
-                        mCameraManager.openCamera();
+                        if (mCameraTextureView != null && mCameraTextureView.isAvailable())
+                            mCameraManager.openCamera(mCameraTextureView.getWidth(), mCameraTextureView.getHeight());
                     }
                 } else {
 

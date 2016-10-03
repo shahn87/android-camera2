@@ -6,8 +6,13 @@
     android:layout_height="match_parent"
     tools:context="com.ahnstory.camera2tutorial.MainActivity">
 
-    <com.ahnstory.camera2tutorial.camera.CameraView
-        android:id="@+id/camera_view"
+    <com.ahnstory.camera2tutorial.camera.CameraTextureView
+        android:id="@+id/camera_texture_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <!--<com.ahnstory.camera2tutorial.camera.CameraView-->
+        <!--android:id="@+id/camera_view"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent" />-->
 </RelativeLayout>
